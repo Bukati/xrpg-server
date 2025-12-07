@@ -275,7 +275,7 @@ export class GameService implements OnModuleInit {
   private formatChapterTweet(
     chapterNumber: number,
     content: string,
-    options: Array<{ text: string; label: string }> | null,
+    options: Array<{ text: string; label: string; description?: string }> | null,
     shortId: string,
     canonTitle?: string,
   ): string {
@@ -284,9 +284,12 @@ export class GameService implements OnModuleInit {
       return `${canonTitle ? `📜 ${canonTitle.toUpperCase()}\n\n` : ''}${content}\n\n—\n\nThe timeline has spoken.\n📖 Full story: https://xrpg.gg/s/${shortId}`;
     }
 
-    // Regular chapter with choices - show numbered options
+    // Regular chapter with choices - show option name and description
     const choicesList = options
-      .map((opt, idx) => `${idx + 1}. ${opt.text}`)
+      .map((opt, idx) => {
+        const desc = opt.description ? ` — ${opt.description}` : '';
+        return `${idx + 1}. ${opt.text}${desc}`;
+      })
       .join('\n\n');
 
     return `${canonTitle && chapterNumber === 1 ? `📜 ${canonTitle.toUpperCase()}\n\n` : ''}${content}\n\n${choicesList}\n\nReply with 1 or 2 to vote.\n\nVoting ends in 2 min.\n📖 https://xrpg.gg/s/${shortId}`;

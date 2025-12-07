@@ -349,51 +349,48 @@ Respond ONLY in JSON:
 
     const currentDate = new Date().toISOString().split('T')[0];
 
-    const prompt = `Today's date is ${currentDate}. All scenarios are set in ${currentDate.split('-')[0]} or later — never in the past.
+    const prompt = `Today's date is ${currentDate}. Scenarios MUST be set today or in the future - NEVER in the past.
 
-Create Chapter 1 of an xRPG timeline based on this tweet: "${tweetText}"${contextInfo}
+Create Chapter 1 of a decision game based on this tweet: "${tweetText}"${contextInfo}
 
-STYLE (non-negotiable):
-- Cinematic, second-person, present tense, Twitter-native but savage
-- Feels like a prestige HBO alternate-history thriller written by a slightly unhinged historian
-- No game terminology inside the story. No "vote", no "option 1", no "reply A". The narrative is sacred.
-- Tension through stakes, not data. No percentages, no stats, no bullet points.
-- The fork must use named, thematic choices: "The Hammer" vs "The Scalpel", "Burn It All" vs "Controlled Burn", etc. Never numbered.
+STYLE:
+- Casual, conversational tone - like explaining to a friend
+- Second person present tense: "You're in a meeting. The CEO just dropped a bomb."
+- Keep it grounded and realistic - no theatrical drama
+- NO data overload - simple and clear
+- BALANCED - both options can succeed or fail
 
-MANDATORY STRUCTURE (exact):
+STRUCTURE:
 
-🗡️ @xRPGBot — [CANON TITLE IN ALL CAPS] 🗡️
+1. TITLE: Simple 2-4 word title (e.g., "The Pay Decision", "Union Talks")
 
-> Quoting the original tweet verbatim...
+2. SETUP (60-80 words):
+   - Start with year and place: "${currentDate.split('-')[0]} — Seattle."
+   - "You're a [role]." (board member, mayor, CEO, etc.)
+   - Present the dilemma clearly
+   - Real stakes, no melodrama
 
-**[YEAR] — [LOCATION]**
+3. TWO OPTIONS - realistic actions, not theatrical names:
+   - Use plain language: "Approve the deal" not "The Hammer"
+   - Each option: a clear action (3-6 words) + brief explanation (1-2 sentences)
+   - Real choices real people would face
 
-[Immersive 2nd-person narrative, 120–220 words. Pure story. Build unbearable tension. End on the moment the decision must be made.]
-
-The republic now stands at the final precipice.
-
-One path remains.
-
-**The Hammer**  
-[Full, vivid description of the aggressive/extreme choice — written like a historical turning point, 2–3 lines, no mechanics]
-
-**The Scalpel**  
-[Full, vivid description of the moderate/pragmatic choice — colder, more calculated, 2–3 lines]
-
-Choose.
-
-Reply with **Hammer** or **Scalpel** to lock in your fate.
-
-JSON output only:
+Respond in JSON:
 {
-  "canonTitle": "THE [TITLE IN ALL CAPS]",
-  "scenario": "[Full story text from 🗡️ line down to the precipice sentence. Plain text, no markdown except the quoting block]",
+  "canonTitle": "The Pay Decision",
+  "scenario": "2025 — San Francisco. You're on the board of a tech company. The CEO wants a $100M package. Engineers haven't seen raises in 2 years and morale is tanking. Both sides are watching what you do next.",
   "options": [
-    { "text": "The Hammer", "description": "[the full Hammer paragraph]" },
-    { "text": "The Scalpel", "description": "[the full Scalpel paragraph]" }
+    { "text": "Approve the CEO package", "label": "1", "description": "Back the CEO. Strong leadership costs money. Deal with the engineer problem later." },
+    { "text": "Block it, prioritize raises", "label": "2", "description": "Reject the package. Redirect funds to retention bonuses. Risk losing the CEO." }
   ],
-  "historicalContext": "Balanced real-world parallels with verifiable sources showing both spectacular successes and catastrophic failures of similar choices"
-}`;
+  "historicalContext": "Real parallel"
+}
+
+IMPORTANT:
+- Options should sound like real decisions, not movie titles
+- "Approve the merger" not "The Final Gambit"
+- "Walk away from the deal" not "The Nuclear Option"
+- Keep everything grounded and believable`;
 
     const response = await this.callGrok(
       [
@@ -548,81 +545,48 @@ Respond in JSON format:
 
     const currentDate = new Date().toISOString().split('T')[0];
 
-    const prompt = `Today's date is ${currentDate}. All events are set in ${currentDate.split('-')[0]} or later — never in the past.
+    const prompt = `Today's date is ${currentDate}. All events MUST be set today or in the future - NEVER in the past.
 
-Continue the xRPG timeline — Chapter ${chapterNumber}${isFinalChapter ? ' (FINAL)' : ''}
+Continue Chapter ${chapterNumber} ${isFinalChapter ? '(FINAL)' : ''} - show what happened after their choice.
 
-STORY SO FAR (for context only, do not repeat in output):
+STORY SO FAR:
 ${historyText}
 
-PLAYER CHOICE: ${winningOption}
-
-STYLE (religion):
-- Pure cinematic alternate-history thriller written by a savage, slightly unhinged historian who secretly wants to watch empires burn
-- Second person, present tense, no game terms inside the narrative — ever
-- Short brutal sentences mixed with long beautiful ones
-- Stakes escalate, consequences bite, no free wins
-- Game Theory Patch v2 active: overreach carries catastrophic tail-risk, moderation often survives longer
-- If this is the final chapter: the ending is never clean. Even victories leave scars.
-
-MANDATORY STRUCTURE (exact):
-
-🗡️ @xRPGBot — \${canonTitle} 🗡️
-
-**[YEAR] — [LOCATION]**
-
-[120–250 words of pure immersive narrative. Show exactly what happened after their choice. No mercy, no plot armor. Make them feel the weight.]
+THEIR CHOICE: Option ${winningOption}
 
 ${
   isFinalChapter
-    ? `[Final 80–120 word epilogue paragraph that closes the timeline forever. Bitter-sweet or brutal. No loose ends.]
-
-**CANON TITLE:** “THE [EPIC TITLE IN QUOTES]”
-
-**ACHIEVEMENT UNLOCKED (1/1 players ever):**
-[One savage line that judges them perfectly]
-
-**🎥 FINAL RECAP VIDEO (90s vertical):**
-[Describe aesthetic, key shots, narration line, final card text]`
-    : `The republic now stands at the final precipice.
-
-One path remains.
-
-**The Hammer**  
-[2–3 lines describing the aggressive/extreme path as a historical turning point]
-
-**The Scalpel**  
-[2–3 lines describing the moderate/pragmatic path — colder, more calculated]
-
-Choose.
-
-Reply with **Hammer** or **Scalpel** to lock in your fate.`
+    ? `FINAL CHAPTER:
+- Show the outcome (50-70 words)
+- Keep it grounded and realistic
+- Casual tone: "Six months later..."
+- NO options - the story ends here
+- Outcomes can be mixed - rarely pure wins or losses`
+    : `NEXT CHAPTER:
+- Show what happened after their choice (40-60 words)
+- Casual, conversational: "Three weeks pass."
+- Keep it realistic - no melodrama
+- Present the next decision point
+- TWO new options - realistic actions with plain language
+- Options like "Accept the terms" or "Push back harder", NOT theatrical names`
 }
 
-JSON output only (for backend):
+Respond in JSON:
 {
   "chapterNumber": ${chapterNumber},
-  "canonTitle": "\${canonTitle}",
-  "content": "[Full story text from 🗡️ line to the end of narrative (before fork or final blocks)]",
-  "fork": ${
-    isFinalChapter
-      ? 'null'
-      : {
-          hammer: '[full Hammer description]',
-          scalpel: '[full Scalpel description]',
-        }
-  },
-  "finalBlocks": ${
-    isFinalChapter
-      ? {
-          canonTitle: 'THE [EPIC TITLE]',
-          achievement: '[savage achievement line]',
-          videoDescription: '[90s video description]',
-        }
-      : 'null'
-  },
-  "historicalContext": "Balanced real-world parallels showing both spectacular successes and catastrophic failures of similar choices, with verifiable sources"
-}`;
+  "chapterTitle": "Simple 2-4 word title",
+  "content": "What happened after their choice. Plain text, conversational tone.",
+  "options": ${isFinalChapter ? 'null' : '[{ "text": "Accept the deal", "label": "1", "description": "Take what is offered. Secure the win. Move on." }, { "text": "Push for more", "label": "2", "description": "Risk the deal. Demand better terms. Could backfire." }]'},
+  "historicalOutcome": "Real parallel",
+  "connectionToReality": "Actual precedent"
+}
+
+IMPORTANT:
+- Options should be plain language actions people actually take
+- "Sign the contract" not "Seal Your Fate"
+- "Fire the team lead" not "The Purge"
+- Keep everything conversational and grounded
+- Real consequences from real-world parallels`;
 
     const response = await this.callGrok(
       [
