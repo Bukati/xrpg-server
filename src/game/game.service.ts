@@ -333,16 +333,16 @@ export class GameService implements OnModuleInit {
 
       const voteAnalysis = await this.grok.parsePlayerReplies(
         replies.map((r) => ({
-          userId: r.author_id,
+          userId: r.author_username,
           tweetText: r.text,
           tweetId: r.id,
         })),
         options,
       );
 
-      // Create a map of userId to tweetId for quick lookup
+      // Create a map of username to tweetId for quick lookup
       const userToTweetMap = new Map(
-        replies.map((r) => [r.author_id, r.id]),
+        replies.map((r) => [r.author_username, r.id]),
       );
 
       for (const vote of voteAnalysis.voteAnalysis) {

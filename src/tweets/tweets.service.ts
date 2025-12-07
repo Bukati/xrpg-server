@@ -262,7 +262,7 @@ export class TweetsService {
   async getReplies(
     tweetId: string,
     sinceTime?: Date,
-  ): Promise<Array<{ id: string; text: string; author_id: string }>> {
+  ): Promise<Array<{ id: string; text: string; author_id: string; author_username: string }>> {
     if (!this.bearerToken) {
       throw new Error('X_BEARER_TOKEN not configured');
     }
@@ -273,9 +273,12 @@ export class TweetsService {
       const query = `in_reply_to_tweet_id:${tweetId}`;
 
       // Use search/recent endpoint to find direct replies
+      // Include user expansion to get usernames
       const params = new URLSearchParams({
         query,
         'tweet.fields': 'author_id,created_at,in_reply_to_user_id',
+        'expansions': 'author_id',
+        'user.fields': 'username',
         max_results: '100',
       });
 
@@ -301,11 +304,20 @@ export class TweetsService {
         return [];
       }
 
-      // Return all direct replies
+      // Build a map of author_id to username from the includes
+      const userMap = new Map<string, string>();
+      if (result.includes?.users) {
+        for (const user of result.includes.users) {
+          userMap.set(user.id, user.username);
+        }
+      }
+
+      // Return all direct replies with username
       return result.data.map((t: any) => ({
         id: t.id,
         text: t.text,
         author_id: t.author_id,
+        author_username: userMap.get(t.author_id) || t.author_id,
       }));
     } catch (error) {
       console.error(`Error fetching replies:`, error.message);
