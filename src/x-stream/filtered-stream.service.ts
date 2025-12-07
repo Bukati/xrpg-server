@@ -32,11 +32,33 @@ interface FilteredStreamEvent {
 @Injectable()
 export class FilteredStreamService {
   private readonly botUsername = 'xRPGBot';
+  private botUserId: string | null = null;
 
   constructor(
     private readonly tweetsService: TweetsService,
     @InjectQueue('quest-evaluation') private questEvaluationQueue: Queue,
   ) {}
+
+  /**
+   * Get the bot's user ID (cached after first fetch)
+   */
+  private async getBotUserId(): Promise<string | null> {
+    if (this.botUserId) {
+      return this.botUserId;
+    }
+
+    try {
+      const user = await this.tweetsService.getUserByUsername(this.botUsername);
+      if (user) {
+        this.botUserId = user.id;
+        console.log(`🤖 Bot user ID cached: ${this.botUserId}`);
+      }
+      return this.botUserId;
+    } catch (error) {
+      console.error('Failed to get bot user ID:', error.message);
+      return null;
+    }
+  }
 
   /**
    * Process incoming filtered stream events
@@ -94,6 +116,14 @@ export class FilteredStreamService {
         const parentTweet = await this.tweetsService.getTweet(replyToTweet.id);
 
         if (parentTweet) {
+          // Check if they're replying to the bot's own tweet (voting on a chapter)
+          // The bot's user ID can be identified by checking if the parent tweet author matches the bot
+          if (tweet.in_reply_to_user_id === parentTweet.author_id &&
+              parentTweet.author_id === await this.getBotUserId()) {
+            console.log('🗳️ This is a reply to a bot tweet (likely a vote), skipping quest evaluation');
+            return;
+          }
+
           console.log('📄 Evaluating parent tweet for game worthiness');
           tweetText = parentTweet.text;
           tweetId = parentTweet.id;

@@ -324,4 +324,37 @@ export class TweetsService {
       return [];
     }
   }
+
+  /**
+   * Get user info by username
+   */
+  async getUserByUsername(username: string): Promise<{ id: string; username: string } | null> {
+    if (!this.bearerToken) {
+      throw new Error('X_BEARER_TOKEN not configured');
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.x.com/2/users/by/username/${username}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.bearerToken}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error(`Failed to fetch user ${username}:`, error);
+        return null;
+      }
+
+      const result = await response.json();
+      return result.data || null;
+    } catch (error) {
+      console.error(`Error fetching user ${username}:`, error.message);
+      return null;
+    }
+  }
 }
