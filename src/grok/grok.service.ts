@@ -52,9 +52,7 @@ export class GrokService {
     }
   }
 
-  private async searchWithGrok(
-    query: string,
-  ): Promise<{
+  private async searchWithGrok(query: string): Promise<{
     content: string;
     citations: string[];
     sources: Array<{ url: string; title: string; excerpt: string }>;
@@ -93,11 +91,14 @@ export class GrokService {
       const data = await response.json();
 
       // Log the response structure
-      this.logger.log(`Parallel search response: ${JSON.stringify(data).substring(0, 500)}`);
+      this.logger.log(
+        `Parallel search response: ${JSON.stringify(data).substring(0, 500)}`,
+      );
 
       // Extract content and citations from Parallel AI response
       const results = data.results || [];
-      const sources: Array<{ url: string; title: string; excerpt: string }> = [];
+      const sources: Array<{ url: string; title: string; excerpt: string }> =
+        [];
 
       for (const result of results) {
         if (result.url) {
@@ -110,11 +111,13 @@ export class GrokService {
       }
 
       // Also build combined content for backwards compatibility
-      const content = sources.map(s => s.excerpt).join('\n\n');
-      const citations = sources.map(s => s.url);
+      const content = sources.map((s) => s.excerpt).join('\n\n');
+      const citations = sources.map((s) => s.url);
 
       this.logger.log(`Search completed: ${sources.length} sources found`);
-      this.logger.log(`Sources: ${JSON.stringify(sources.map(s => ({ url: s.url, title: s.title })))}`);
+      this.logger.log(
+        `Sources: ${JSON.stringify(sources.map((s) => ({ url: s.url, title: s.title })))}`,
+      );
 
       return { content, citations, sources };
     } catch (error) {
@@ -158,7 +161,8 @@ Remove all opinions and emotional language. List facts and themes concisely.`;
       );
 
       // Multi-angle search strategy using Parallel AI objectives
-      let allSources: Array<{ url: string; title: string; excerpt: string }> = [];
+      let allSources: Array<{ url: string; title: string; excerpt: string }> =
+        [];
 
       // Search 1: Main topic with historical precedents and both perspectives
       const mainQuery = `Find sources about: ${factualContent}. Include historical precedents, similar cases, arguments in favor (benefits, rationale, supporting evidence), and arguments against (criticisms, opposing views, counterarguments).`;
@@ -167,7 +171,9 @@ Remove all opinions and emotional language. List facts and themes concisely.`;
         if (result.sources) {
           allSources.push(...result.sources);
         }
-        this.logger.log(`Main search found ${result.sources?.length || 0} sources`);
+        this.logger.log(
+          `Main search found ${result.sources?.length || 0} sources`,
+        );
       } catch (error) {
         this.logger.warn(`Main search failed: ${error.message}`);
       }
@@ -180,7 +186,9 @@ Remove all opinions and emotional language. List facts and themes concisely.`;
           if (result.sources) {
             allSources.push(...result.sources);
           }
-          this.logger.log(`Context search found ${result.sources?.length || 0} sources`);
+          this.logger.log(
+            `Context search found ${result.sources?.length || 0} sources`,
+          );
         } catch (error) {
           this.logger.warn(`Context search failed: ${error.message}`);
         }
@@ -199,8 +207,12 @@ Remove all opinions and emotional language. List facts and themes concisely.`;
 
       if (topSources.length === 0) {
         this.logger.error('CRITICAL: No sources found from Parallel AI search');
-        this.logger.error('This means the search API failed to return any results');
-        throw new Error('Failed to find real sources - Parallel AI returned no results');
+        this.logger.error(
+          'This means the search API failed to return any results',
+        );
+        throw new Error(
+          'Failed to find real sources - Parallel AI returned no results',
+        );
       }
 
       // Map to the expected format with actual titles and excerpts
@@ -211,12 +223,16 @@ Remove all opinions and emotional language. List facts and themes concisely.`;
       }));
 
       this.logger.log(`Found ${sources.length} historical sources`);
-      this.logger.log(`Sources: ${JSON.stringify(sources.map(s => s.title))}`);
+      this.logger.log(
+        `Sources: ${JSON.stringify(sources.map((s) => s.title))}`,
+      );
       return sources;
     } catch (error) {
       this.logger.error(`Failed to find sources: ${error.message}`);
       // Re-throw the error - we ONLY want real sources, no fallbacks
-      throw new Error(`Failed to find real historical sources: ${error.message}`);
+      throw new Error(
+        `Failed to find real historical sources: ${error.message}`,
+      );
     }
   }
 
@@ -332,62 +348,51 @@ Respond in JSON format:
 
     const currentDate = new Date().toISOString().split('T')[0];
 
-    const prompt = `Today's date is ${currentDate}. Scenarios MUST be set today or in the future - NEVER in the past.
+    const prompt = `Today's date is ${currentDate}. All scenarios are set in ${currentDate.split('-')[0]} or later — never in the past.
 
-Create Chapter 1 of a high-stakes decision game based on this tweet: "${tweetText}"${contextInfo}
+Create Chapter 1 of an xRPG timeline based on this tweet: "${tweetText}"${contextInfo}
 
-STYLE:
-- Casual, punchy, Twitter-native tone
-- Second person present tense: "You're in the boardroom. Everyone's staring."
-- NO data overload - keep it simple and engaging
-- Consequences should be REALISTIC and BALANCED - both options can succeed or fail
-- MUST be backed by real historical precedents and sources
-- NO inherent bias - unconventional choices can win, safe choices can backfire
+STYLE (non-negotiable):
+- Cinematic, second-person, present tense, Twitter-native but savage
+- Feels like a prestige HBO alternate-history thriller written by a slightly unhinged historian
+- No game terminology inside the story. No "vote", no "option 1", no "reply A". The narrative is sacred.
+- Tension through stakes, not data. No percentages, no stats, no bullet points.
+- The fork must use named, thematic choices: "The Hammer" vs "The Scalpel", "Burn It All" vs "Controlled Burn", etc. Never numbered.
 
-STRUCTURE:
+MANDATORY STRUCTURE (exact):
 
-1. TITLE: Short, punchy 2-4 word title (e.g., "The CEO Gamble", "Union Showdown")
+🗡️ @xRPGBot — [CANON TITLE IN ALL CAPS] 🗡️
 
-2. SETUP (60-80 words MAX):
-   - Start with year (${currentDate.split('-')[0]} or later) and place: "${currentDate.split('-')[0]} — Seattle."
-   - "You're a [role]." (board member, mayor, CEO, etc.)
-   - Present the dilemma simply
-   - NO statistics, NO percentages, NO detailed data
-   - Build tension with realistic stakes
-   - End when they need to choose
+> Quoting the original tweet verbatim...
 
-3. OPTIONS: TWO simple choices - just the ACTION, no consequences revealed
-   - Each option: Just the choice/action (3-8 words max)
-   - DO NOT reveal consequences - those come in next chapter
-   - NO emojis in labels - just plain numbered options
-   - Make it a clear, simple decision
+**[YEAR] — [LOCATION]**
 
-Respond in JSON:
+[Immersive 2nd-person narrative, 120–220 words. Pure story. Build unbearable tension. End on the moment the decision must be made.]
+
+The republic now stands at the final precipice.
+
+One path remains.
+
+**The Hammer**  
+[Full, vivid description of the aggressive/extreme choice — written like a historical turning point, 2–3 lines, no mechanics]
+
+**The Scalpel**  
+[Full, vivid description of the moderate/pragmatic choice — colder, more calculated, 2–3 lines]
+
+Choose.
+
+Reply with **Hammer** or **Scalpel** to lock in your fate.
+
+JSON output only:
 {
-  "canonTitle": "The [Title]",
-  "scenario": "Just the setup - NO options included. Plain text, no markdown.",
+  "canonTitle": "THE [TITLE IN ALL CAPS]",
+  "scenario": "[Full story text from 🗡️ line down to the precipice sentence. Plain text, no markdown except the quoting block]",
   "options": [
-    { "text": "Simple action/choice (no consequences)", "label": "1" },
-    { "text": "Simple action/choice (no consequences)", "label": "2" }
+    { "text": "The Hammer", "description": "[the full Hammer paragraph]" },
+    { "text": "The Scalpel", "description": "[the full Scalpel paragraph]" }
   ],
-  "historicalContext": "Real parallel"
-}
-
-EXAMPLE:
-Title: "The Pay Fight"
-Setup: "${currentDate.split('-')[0]} — Seattle. You're on the Starbucks board. New CEO wants $96M for 4 months. Union workers haven't had a contract in years. The internet is watching."
-Option 1: "Approve the CEO package"
-Option 2: "Fast-track union contracts"
-
-IMPORTANT:
-- Consequences must be REALISTIC and backed by real historical events
-- Cite actual examples from history - show BOTH successes AND failures for similar choices
-- Sources MUST be real, verifiable links
-- BE BALANCED: History shows bold moves sometimes win big (Reagan, Thatcher, tech disruptors) and sometimes fail
-- Don't assume conventional = safe or unconventional = risky. Context matters.
-- Show trade-offs, not predetermined winners
-
-REMEMBER: Balanced, realistic setup. Both options are viable. Consequences revealed next chapter with real historical backing.`;
+  "historicalContext": "Balanced real-world parallels with verifiable sources showing both spectacular successes and catastrophic failures of similar choices"
+}`;
 
     const response = await this.callGrok(
       [
@@ -542,53 +547,81 @@ Respond in JSON format:
 
     const currentDate = new Date().toISOString().split('T')[0];
 
-    const prompt = `Today's date is ${currentDate}. All events MUST be set today or in the future - NEVER in the past.
+    const prompt = `Today's date is ${currentDate}. All events are set in ${currentDate.split('-')[0]} or later — never in the past.
 
-Continue Chapter ${chapterNumber} ${isFinalChapter ? '(FINAL)' : ''} - show what happened after their choice.
+Continue the xRPG timeline — Chapter ${chapterNumber}${isFinalChapter ? ' (FINAL)' : ''}
 
-STORY SO FAR:
+STORY SO FAR (for context only, do not repeat in output):
 ${historyText}
 
-THEIR CHOICE: Option ${winningOption}
+PLAYER CHOICE: ${winningOption}
+
+STYLE (religion):
+- Pure cinematic alternate-history thriller written by a savage, slightly unhinged historian who secretly wants to watch empires burn
+- Second person, present tense, no game terms inside the narrative — ever
+- Short brutal sentences mixed with long beautiful ones
+- Stakes escalate, consequences bite, no free wins
+- Game Theory Patch v2 active: overreach carries catastrophic tail-risk, moderation often survives longer
+- If this is the final chapter: the ending is never clean. Even victories leave scars.
+
+MANDATORY STRUCTURE (exact):
+
+🗡️ @xRPGBot — \${canonTitle} 🗡️
+
+**[YEAR] — [LOCATION]**
+
+[120–250 words of pure immersive narrative. Show exactly what happened after their choice. No mercy, no plot armor. Make them feel the weight.]
 
 ${
   isFinalChapter
-    ? `FINAL CHAPTER:
-- Show the realistic outcome (60-80 words)
-- Consequences should be BELIEVABLE and backed by history
-- Casual, punchy tone: "Six months later, the results are in."
-- NO options - the story ends here
-- BALANCED outcomes: the choice could lead to success, partial success, or failure depending on context
-- MUST reference real historical outcomes from similar decisions`
-    : `NEXT CHAPTER:
-- Show realistic fallout from their choice (50-70 words)
-- Casual second person: "It happens fast."
-- NO data/stats - engaging but REALISTIC
-- Build to next tough choice
-- TWO new options - just the ACTION, NO consequences revealed
-- BALANCED: Their choice isn't automatically good or bad - show nuanced results
-- Base consequences on REAL historical precedents`
+    ? `[Final 80–120 word epilogue paragraph that closes the timeline forever. Bitter-sweet or brutal. No loose ends.]
+
+**CANON TITLE:** “THE [EPIC TITLE IN QUOTES]”
+
+**ACHIEVEMENT UNLOCKED (1/1 players ever):**
+[One savage line that judges them perfectly]
+
+**🎥 FINAL RECAP VIDEO (90s vertical):**
+[Describe aesthetic, key shots, narration line, final card text]`
+    : `The republic now stands at the final precipice.
+
+One path remains.
+
+**The Hammer**  
+[2–3 lines describing the aggressive/extreme path as a historical turning point]
+
+**The Scalpel**  
+[2–3 lines describing the moderate/pragmatic path — colder, more calculated]
+
+Choose.
+
+Reply with **Hammer** or **Scalpel** to lock in your fate.`
 }
 
-Respond in JSON:
+JSON output only (for backend):
 {
   "chapterNumber": ${chapterNumber},
-  "chapterTitle": "Short 2-4 word title (e.g., 'Breaking Point', 'The Reckoning', 'Last Stand')",
-  "content": "Just the consequences - NO options. Plain text, no markdown.",
-  "options": ${isFinalChapter ? 'null' : '[{ "text": "Simple action/choice (no consequences)", "label": "1" }, { "text": "Simple action/choice (no consequences)", "label": "2" }]'},
-  "historicalOutcome": "Real parallel",
-  "connectionToReality": "Actual precedent"
-}
-
-CRITICAL REQUIREMENTS:
-- ALL consequences must be based on REAL historical events
-- Outcomes should reflect what ACTUALLY happened in similar real-world situations
-- BE BALANCED: Bold/unconventional choices have succeeded historically (Brexit, tech disruption, political upsets)
-- Don't punish players for "edgy" choices - history is full of underdogs winning
-- Show nuance: most outcomes are mixed, not pure victory or defeat
-- Every consequence should have a clear historical precedent
-
-REMEMBER: Balanced, realistic consequences backed by history. No predetermined "correct" answer. No spoilers in options.`;
+  "canonTitle": "\${canonTitle}",
+  "content": "[Full story text from 🗡️ line to the end of narrative (before fork or final blocks)]",
+  "fork": ${
+    isFinalChapter
+      ? 'null'
+      : {
+          hammer: '[full Hammer description]',
+          scalpel: '[full Scalpel description]',
+        }
+  },
+  "finalBlocks": ${
+    isFinalChapter
+      ? {
+          canonTitle: 'THE [EPIC TITLE]',
+          achievement: '[savage achievement line]',
+          videoDescription: '[90s video description]',
+        }
+      : 'null'
+  },
+  "historicalContext": "Balanced real-world parallels showing both spectacular successes and catastrophic failures of similar choices, with verifiable sources"
+}`;
 
     const response = await this.callGrok(
       [
@@ -636,7 +669,9 @@ REMEMBER: Balanced, realistic consequences backed by history. No predetermined "
     optionNumber: number,
     scenarioContext: string,
   ): Promise<string> {
-    this.logger.log(`Generating vote reply for option ${optionNumber}: ${optionText}`);
+    this.logger.log(
+      `Generating vote reply for option ${optionNumber}: ${optionText}`,
+    );
 
     const prompt = `Generate a short, punchy tweet reply for someone voting "${optionText}" in a decision game.
 
@@ -663,7 +698,8 @@ Generate ONE reply:`;
       [
         {
           role: 'system',
-          content: 'Generate only the tweet text. No quotes, no explanation, just the reply.',
+          content:
+            'Generate only the tweet text. No quotes, no explanation, just the reply.',
         },
         { role: 'user', content: prompt },
       ],
@@ -672,8 +708,10 @@ Generate ONE reply:`;
 
     // Clean up the response - remove quotes if present
     let reply = response.trim();
-    if ((reply.startsWith('"') && reply.endsWith('"')) ||
-        (reply.startsWith("'") && reply.endsWith("'"))) {
+    if (
+      (reply.startsWith('"') && reply.endsWith('"')) ||
+      (reply.startsWith("'") && reply.endsWith("'"))
+    ) {
       reply = reply.slice(1, -1);
     }
 
@@ -716,7 +754,8 @@ Generate ONE unique reply:`;
       [
         {
           role: 'system',
-          content: 'Generate only the tweet text. No quotes, no explanation, just the message.',
+          content:
+            'Generate only the tweet text. No quotes, no explanation, just the message.',
         },
         { role: 'user', content: prompt },
       ],
@@ -724,8 +763,10 @@ Generate ONE unique reply:`;
     );
 
     let reply = response.trim();
-    if ((reply.startsWith('"') && reply.endsWith('"')) ||
-        (reply.startsWith("'") && reply.endsWith("'"))) {
+    if (
+      (reply.startsWith('"') && reply.endsWith('"')) ||
+      (reply.startsWith("'") && reply.endsWith("'"))
+    ) {
       reply = reply.slice(1, -1);
     }
 
@@ -741,7 +782,9 @@ Generate ONE unique reply:`;
     newChapterTweetId: string,
     winningOptionText: string,
   ): Promise<string> {
-    this.logger.log(`Generating vote win notification for chapter ${chapterNumber}`);
+    this.logger.log(
+      `Generating vote win notification for chapter ${chapterNumber}`,
+    );
 
     const prompt = `Generate a short, punchy tweet to notify someone their vote WON in an xRPG decision game.
 
@@ -768,7 +811,8 @@ Generate ONE unique reply:`;
       [
         {
           role: 'system',
-          content: 'Generate only the tweet text. No quotes, no explanation, just the message.',
+          content:
+            'Generate only the tweet text. No quotes, no explanation, just the message.',
         },
         { role: 'user', content: prompt },
       ],
@@ -776,8 +820,10 @@ Generate ONE unique reply:`;
     );
 
     let reply = response.trim();
-    if ((reply.startsWith('"') && reply.endsWith('"')) ||
-        (reply.startsWith("'") && reply.endsWith("'"))) {
+    if (
+      (reply.startsWith('"') && reply.endsWith('"')) ||
+      (reply.startsWith("'") && reply.endsWith("'"))
+    ) {
       reply = reply.slice(1, -1);
     }
 
