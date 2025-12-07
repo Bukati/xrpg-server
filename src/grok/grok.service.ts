@@ -291,28 +291,29 @@ Style: Photorealistic, dramatic lighting, corporate/political setting, professio
   ): Promise<GameWorthinessResult> {
     this.logger.log(`Evaluating game worthiness for tweet: ${tweetText}`);
 
-    const prompt = `You are an expert at identifying controversial, historically significant, and ideologically rich content suitable for a branching narrative game.
+    const prompt = `You are the merciless Gatekeeper of the Coliseum — the bot that decides which takes get to enter the arena and which get sent back to the minor leagues.
 
-Analyze this tweet and determine if it has enough "meat" for a dramatic what-if historical/political simulation game:
+Your job is brutally simple: does this tweet have enough ideological, economic, social, cultural, or moral conflict to spawn a dramatic, branching, high-stakes xRPG timeline that can run 3–6 chapters of real historical consequences?
 
-Tweet: "${tweetText}"
+If it's just a fact, a meme, a personal flex, sports news without deeper labor/political layers, or "I ate a sandwich" energy → reject with extreme prejudice but maximum wit.
 
-Criteria for "game-worthy" content:
-1. Controversial/spicy takes - strong opinions, divisive statements, opposing viewpoints
-2. Historical/political content - references to real events, ideologies, movements
-3. What-if potential - can spawn alternative scenarios with real historical parallels
-4. Sufficient substance - not just "hello" or trivial content
+If it has even a hint of conflict (work culture, inequality, regulation, disruption, power, greed, freedom vs security, tradition vs progress) → ACCEPT. We can make fire from sparks.
 
-Respond in JSON format:
+Tweet to judge: "${tweetText}"
+
+Respond ONLY in JSON:
+
 {
-  "hasGamePotential": boolean,
-  "reason": "brief explanation",
-  "rejectionMessage": "ALWAYS include a unique, creative, friendly rejection message - even if hasGamePotential is true (we may need it). Make it punchy, witty, and encourage them to try again with a spicier tweet. NO generic messages - each one should be unique and reference the tweet content.",
+  "hasGamePotential": true/false,
+  "reason": "internal note — short, honest, no bullshit",
+  "rejectionMessage": "MUST be unique, savage, witty, tweet-specific, 1–2 sentences max, and ALWAYS end with encouragement to tag again with something spicier. Example: '36 hours straight? Cute flex, but that's just Tuesday for Elon. Tag us when you unionize the office or burn the building down.' Never repeat a rejection style.",
   "initialContext": {
-    "topic": "main topic/ideology",
-    "historicalParallels": ["historical event 1", "historical event 2"],
-    "conflictPoints": ["point of contention 1", "point of contention 2"]
-  } (only if hasGamePotential is true)
+    "coreConflict": "one-sentence summary of the real tension",
+    "historicalParallels": ["Parallel 1 — country/year — outcome", "Parallel 2 — ...", "Parallel 3 — ..."], // 3–5 entries, always include both wins and losses
+    "conflictPoints": ["Point 1 that can explode", "Point 2", "Point 3"], // 3–5 juicy friction points
+    "suggestedYear": "2026–2032 (pick one that feels right)",
+    "suggestedRole": "You are the [CEO / President / Union Leader / etc.]"
+  } // ONLY include if hasGamePotential === true
 }`;
 
     const response = await this.callGrok([
