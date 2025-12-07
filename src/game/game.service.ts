@@ -122,11 +122,13 @@ export class GameService implements OnModuleInit {
 
           const chapter1 = existingQuest.chapters.find((ch) => ch.chapterNumber === 1);
           if (chapter1) {
-            // Reply with link to first chapter
-            await this.tweets.replyToTweetAsBot(
-              mentionTweetId,
-              `A quest is already running! Check out Chapter 1: https://x.com/xRPGBot/status/${chapter1.postedTweetId}\n\nFull story: https://xrpg.gg/s/${existingQuest.shortId}`,
+            // Generate unique reply using Grok and post it
+            const replyText = await this.grok.generateQuestAlreadyRunningReply(
+              existingQuest.shortId,
+              chapter1.postedTweetId,
+              tweetText,
             );
+            await this.tweets.replyToTweetAsBot(mentionTweetId, replyText);
           }
 
           return {
@@ -141,15 +143,13 @@ export class GameService implements OnModuleInit {
       if (!evaluation.hasGamePotential) {
         this.logger.log(`Quest rejected: ${evaluation.reason}`);
 
-        await this.tweets.replyToTweetAsBot(
-          mentionTweetId,
-          evaluation.rejectionMessage ||
-            "Thanks for playing! This tweet doesn't have enough historical/ideological depth for an xRPG quest. Try tagging me in tweets about political systems, historical what-ifs, or controversial ideologies!",
-        );
+        // Use Grok-generated rejection message (always generated, never hardcoded)
+        const rejectionMessage = evaluation.rejectionMessage!;
+        await this.tweets.replyToTweetAsBot(mentionTweetId, rejectionMessage);
 
         return {
           started: false,
-          message: evaluation.rejectionMessage,
+          message: rejectionMessage,
         };
       }
 
@@ -532,6 +532,19 @@ export class GameService implements OnModuleInit {
     newChapterNumber: number,
   ): Promise<void> {
     try {
+      // Get the chapter to find the winning option text
+      const chapter = await this.prisma.chapter.findUnique({
+        where: { id: previousChapterId },
+      });
+
+      if (!chapter) {
+        this.logger.error(`Chapter ${previousChapterId} not found for notification`);
+        return;
+      }
+
+      const options = chapter.options as Array<{ text: string; label: string }>;
+      const winningOptionText = options?.[winningOption - 1]?.text || `Option ${winningOption}`;
+
       // Get all votes for the previous chapter
       const votes = await this.prisma.chapterVote.findMany({
         where: {
@@ -552,12 +565,19 @@ export class GameService implements OnModuleInit {
         `Notifying ${votes.length} users whose vote won`,
       );
 
-      // Reply to each winning voter
+      // Generate ONE unique notification using Grok (same for all winners this chapter)
+      const notificationText = await this.grok.generateVoteWinNotification(
+        newChapterNumber,
+        newChapterTweetId,
+        winningOptionText,
+      );
+
+      // Reply to each winning voter with the generated message
       for (const vote of votes) {
         try {
           await this.tweets.replyToTweetAsBot(
             vote.replyTweetId,
-            `Your choice won! Chapter ${newChapterNumber} is here: https://x.com/xRPGBot/status/${newChapterTweetId}`,
+            notificationText,
           );
           this.logger.log(`Notified user ${vote.user.xHandle}`);
         } catch (error) {

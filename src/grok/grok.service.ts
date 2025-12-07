@@ -291,7 +291,7 @@ Respond in JSON format:
 {
   "hasGamePotential": boolean,
   "reason": "brief explanation",
-  "rejectionMessage": "friendly message if rejected (only if hasGamePotential is false)",
+  "rejectionMessage": "ALWAYS include a unique, creative, friendly rejection message - even if hasGamePotential is true (we may need it). Make it punchy, witty, and encourage them to try again with a spicier tweet. NO generic messages - each one should be unique and reference the tweet content.",
   "initialContext": {
     "topic": "main topic/ideology",
     "historicalParallels": ["historical event 1", "historical event 2"],
@@ -683,6 +683,108 @@ Generate ONE reply:`;
     }
 
     this.logger.log(`Generated vote reply: ${reply}`);
+    return reply;
+  }
+
+  async generateQuestAlreadyRunningReply(
+    shortId: string,
+    chapter1TweetId: string,
+    tweetContext: string,
+  ): Promise<string> {
+    this.logger.log(`Generating "quest already running" reply`);
+
+    const prompt = `Generate a short, punchy tweet to inform someone that an xRPG quest is already in progress for this tweet.
+
+Context about the original tweet: ${tweetContext.substring(0, 100)}
+
+Requirements:
+- Must be under 250 characters (excluding the URLs which will be added)
+- Casual, Twitter-native tone
+- Welcoming and inviting them to join the ongoing quest
+- NO generic phrases - be creative and reference the topic
+- NO hashtags, NO emojis
+- Just the message, the URLs will be appended separately
+
+Examples of good replies:
+- "This timeline is already under siege! The battle rages on."
+- "Too late to start fresh - but not too late to pick a side. Jump in!"
+- "The simulation is live. Votes are flying. Make yours count."
+
+Generate ONE unique reply:`;
+
+    const response = await this.callGrok(
+      [
+        {
+          role: 'system',
+          content: 'Generate only the tweet text. No quotes, no explanation, just the message.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      0.9,
+    );
+
+    let reply = response.trim();
+    if ((reply.startsWith('"') && reply.endsWith('"')) ||
+        (reply.startsWith("'") && reply.endsWith("'"))) {
+      reply = reply.slice(1, -1);
+    }
+
+    // Append the URLs
+    reply += `\n\nChapter 1: https://x.com/xRPGBot/status/${chapter1TweetId}\nFull story: https://xrpg.gg/s/${shortId}`;
+
+    this.logger.log(`Generated quest already running reply: ${reply}`);
+    return reply;
+  }
+
+  async generateVoteWinNotification(
+    chapterNumber: number,
+    newChapterTweetId: string,
+    winningOptionText: string,
+  ): Promise<string> {
+    this.logger.log(`Generating vote win notification for chapter ${chapterNumber}`);
+
+    const prompt = `Generate a short, punchy tweet to notify someone their vote WON in an xRPG decision game.
+
+They voted for: "${winningOptionText}"
+The next chapter (Chapter ${chapterNumber}) is now live.
+
+Requirements:
+- Must be under 200 characters (excluding the URL which will be added)
+- Celebratory but not over the top
+- Casual, Twitter-native tone
+- Acknowledge their choice and its impact
+- NO generic "you won!" - reference their actual choice
+- NO hashtags, NO emojis
+- Just the message, the URL will be appended separately
+
+Examples:
+- "The people spoke. Your call shaped history."
+- "Bold move paid off. The timeline bends your way."
+- "Your voice counted. See what happens next."
+
+Generate ONE unique reply:`;
+
+    const response = await this.callGrok(
+      [
+        {
+          role: 'system',
+          content: 'Generate only the tweet text. No quotes, no explanation, just the message.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      0.9,
+    );
+
+    let reply = response.trim();
+    if ((reply.startsWith('"') && reply.endsWith('"')) ||
+        (reply.startsWith("'") && reply.endsWith("'"))) {
+      reply = reply.slice(1, -1);
+    }
+
+    // Append the URL
+    reply += `\n\nChapter ${chapterNumber}: https://x.com/xRPGBot/status/${newChapterTweetId}`;
+
+    this.logger.log(`Generated vote win notification: ${reply}`);
     return reply;
   }
 }
