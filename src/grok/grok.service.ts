@@ -638,26 +638,31 @@ IMPORTANT:
       `Generating vote reply for option ${optionNumber}: ${optionText}`,
     );
 
-    const prompt = `Generate a short, punchy tweet reply for someone voting "${optionText}" in a decision game.
-
-Context: ${scenarioContext}
+    const prompt = `Generate a tweet reply for someone voting "${optionText}" in a decision game.
 
 Requirements:
-- Must be under 200 characters
-- Casual, Twitter-native tone
-- Express conviction in the choice
-- Can be witty, dramatic, or decisive
-- Must include the number "${optionNumber}" somewhere (e.g., "Going with ${optionNumber}.", "My vote: ${optionNumber}")
+- Under 140 characters
+- Include the number "${optionNumber}"
+- Add some personality - confident, witty, or bold
+- NO predictions about what WILL happen - no outcomes, no consequences
+- You can comment on the choice itself, just not what it leads to
 - NO hashtags, NO emojis, NO @mentions
-- Just the reply text, nothing else
 
-Examples:
-- "Going with 1. Sometimes you gotta let the system burn to rebuild it right."
-- "2. History shows compromise beats chaos every time."
-- "1 - can't negotiate with people who won't come to the table."
-- "Voting 2. The long game wins."
+Good examples (personality without predicting outcomes):
+- "Going with 1. Bold move, but someone had to make it."
+- "2 - the interesting choice here."
+- "Voting 1. No hesitation."
+- "My call is 2. Let's see how this plays out."
+- "1. You don't get anywhere playing it safe."
+- "2 for me. Sometimes the boring choice is the right one."
 
-Generate ONE reply:`;
+BAD examples (predicting outcomes - DON'T DO THIS):
+- "1. The company will crash." (predicts outcome)
+- "2. This saves everyone." (predicts outcome)
+- "Voting 1. They'll regret crossing us." (predicts outcome)
+- "2. Stock price to the moon." (predicts outcome)
+
+Generate ONE reply with personality but NO outcome predictions:`;
 
     const response = await this.callGrok(
       [
