@@ -1,0 +1,194 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Game-specific fields
+  xHandle      String? @unique
+  globalStreak Int     @default(0)
+  role         Role    @default(PLAYER)
+
+  // Relations
+  accounts     Account[]
+  sessions     Session[]
+  badges       Badge[]
+  titles       Title[]
+  executions   Execution[]
+  questVotes   QuestVote[]
+  chapterVotes ChapterVote[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expiresAt    DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  imageUrl    String?
+  earnedAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("badges")
+}
+
+model Title {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("titles")
+}
+
+model Quest {
+  id                String      @id @default(cuid())
+  shortId           String      @unique
+  status            QuestStatus @default(ACTIVE)
+  initialTweet      String
+  tweetId           String      @unique
+  currentState      Json
+  timelineData      Json?
+  recapVideoUrl     String?
+  currentChapter    Int         @default(1)
+  chapterDeadline   DateTime?
+  lastPostedTweetId String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  votes      QuestVote[]
+  executions Execution[]
+  chapters   Chapter[]
+
+  @@map("quests")
+}
+
+model QuestVote {
+  id      String   @id @default(cuid())
+  questId String
+  userId  String
+  vote    String
+  votedAt DateTime @default(now())
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, userId])
+  @@map("quest_votes")
+}
+
+model Execution {
+  id           String   @id @default(cuid())
+  questId      String
+  userId       String
+  side         String
+  roastText    String
+  tombstoneUrl String?
+  executedAt   DateTime @default(now())
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("executions")
+}
+
+model Chapter {
+  id            String   @id @default(cuid())
+  questId       String
+  chapterNumber Int
+  content       String   @db.Text
+  options       Json
+  sources       Json
+  postedTweetId String
+  createdAt     DateTime @default(now())
+
+  quest Quest         @relation(fields: [questId], references: [id], onDelete: Cascade)
+  votes ChapterVote[]
+
+  @@unique([questId, chapterNumber])
+  @@map("chapters")
+}
+
+model ChapterVote {
+  id                 String   @id @default(cuid())
+  chapterId          String
+  userId             String
+  selectedOption     Int
+  replyText          String   @db.Text
+  replyTweetId       String
+  grokInterpretation String   @db.Text
+  votedAt            DateTime @default(now())
+
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chapter_votes")
+}
+
+enum Role {
+  PLAYER
+  ADMIN
+}
+
+enum QuestStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
