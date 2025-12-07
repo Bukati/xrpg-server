@@ -339,9 +339,10 @@ Create Chapter 1 of a high-stakes decision game based on this tweet: "${tweetTex
 STYLE:
 - Casual, punchy, Twitter-native tone
 - Second person present tense: "You're in the boardroom. Everyone's staring."
-- NO data overload - keep it simple and dramatic
-- Consequences should be REALISTIC but slightly heightened for drama
+- NO data overload - keep it simple and engaging
+- Consequences should be REALISTIC and BALANCED - both options can succeed or fail
 - MUST be backed by real historical precedents and sources
+- NO inherent bias - unconventional choices can win, safe choices can backfire
 
 STRUCTURE:
 
@@ -380,18 +381,20 @@ Option 2: "Fast-track union contracts"
 
 IMPORTANT:
 - Consequences must be REALISTIC and backed by real historical events
-- Cite actual examples from history (labor strikes, CEO controversies, corporate decisions)
+- Cite actual examples from history - show BOTH successes AND failures for similar choices
 - Sources MUST be real, verifiable links
-- Outcomes should reflect what ACTUALLY happens in similar situations, not fantasy scenarios
+- BE BALANCED: History shows bold moves sometimes win big (Reagan, Thatcher, tech disruptors) and sometimes fail
+- Don't assume conventional = safe or unconventional = risky. Context matters.
+- Show trade-offs, not predetermined winners
 
-REMEMBER: Realistic but dramatic setup. Options are just the choice. Consequences revealed next chapter with real historical backing.`;
+REMEMBER: Balanced, realistic setup. Both options are viable. Consequences revealed next chapter with real historical backing.`;
 
     const response = await this.callGrok(
       [
         {
           role: 'system',
           content:
-            'You are a JSON-only assistant specialized in historical accuracy. Always respond with valid JSON.',
+            'You are a JSON-only assistant specialized in historical accuracy. Create BALANCED scenarios where both options are viable - no predetermined losers. Always respond with valid JSON.',
         },
         { role: 'user', content: prompt },
       ],
@@ -552,16 +555,18 @@ ${
   isFinalChapter
     ? `FINAL CHAPTER:
 - Show the realistic outcome (60-80 words)
-- Consequences should be dramatic but BELIEVABLE and backed by history
+- Consequences should be BELIEVABLE and backed by history
 - Casual, punchy tone: "Six months later, the results are in."
 - NO options - the story ends here
+- BALANCED outcomes: the choice could lead to success, partial success, or failure depending on context
 - MUST reference real historical outcomes from similar decisions`
     : `NEXT CHAPTER:
 - Show realistic fallout from their choice (50-70 words)
 - Casual second person: "It happens fast."
-- NO data/stats - pure drama but REALISTIC
+- NO data/stats - engaging but REALISTIC
 - Build to next tough choice
 - TWO new options - just the ACTION, NO consequences revealed
+- BALANCED: Their choice isn't automatically good or bad - show nuanced results
 - Base consequences on REAL historical precedents`
 }
 
@@ -578,17 +583,19 @@ Respond in JSON:
 CRITICAL REQUIREMENTS:
 - ALL consequences must be based on REAL historical events
 - Outcomes should reflect what ACTUALLY happened in similar real-world situations
-- Slightly heighten drama for engagement, but stay grounded in reality
+- BE BALANCED: Bold/unconventional choices have succeeded historically (Brexit, tech disruption, political upsets)
+- Don't punish players for "edgy" choices - history is full of underdogs winning
+- Show nuance: most outcomes are mixed, not pure victory or defeat
 - Every consequence should have a clear historical precedent
 
-REMEMBER: Realistic consequences backed by history. Options are just the choice. No spoilers in options.`;
+REMEMBER: Balanced, realistic consequences backed by history. No predetermined "correct" answer. No spoilers in options.`;
 
     const response = await this.callGrok(
       [
         {
           role: 'system',
           content:
-            'You are a JSON-only assistant. Create historically accurate narratives. Always respond with valid JSON.',
+            'You are a JSON-only assistant. Create historically accurate, BALANCED narratives. No ideology is inherently doomed - show realistic trade-offs. Always respond with valid JSON.',
         },
         { role: 'user', content: prompt },
       ],
